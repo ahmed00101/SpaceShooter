@@ -1,0 +1,13 @@
+
+SpaceShip.png
+size: 512,512
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+shooterSprites
+  rotate: false
+  xy: 2, 2
+  size: 264, 360
+  orig: 264, 360
+  offset: 0, 0
+  index: -1
