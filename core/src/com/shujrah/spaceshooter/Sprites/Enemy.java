@@ -37,7 +37,7 @@ public class Enemy extends gameObject {
     Long created;
     public final String typeStr = "Enemy";
     FixtureDef fdef;
-    public static final long spawnDelay = 50000;
+    public static final long spawnDelay = 500;
     TextureRegion textureRegion;
 
 

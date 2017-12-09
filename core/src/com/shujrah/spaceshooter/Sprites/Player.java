@@ -2,6 +2,7 @@ package com.shujrah.spaceshooter.Sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.shujrah.spaceshooter.MyGame;
 import com.shujrah.spaceshooter.MyLib;
@@ -30,24 +32,27 @@ public class Player extends Sprite {
     MyScreen screen;
     public Body body;
     Texture texture;
-    //Texture spriteSheet;
-    TextureRegion textureRegion;
+    TextureRegion textureRegion, region2;
     public float x, y;
     int width, height, bulletDelay;
     enum State { MOVING_LEFT, MOVING_RIGHT, STATIONARY, DEAD };
     State current, previous;
     public boolean isFiring;
+    public float stateTimer;
+    public int lives;
 
     FixtureDef fdef;
 
     Long created;
     long lastBulletTime;
+    public Animation<TextureRegion> stationary, moving_left, moving_right, dead;
 
 
 
 
 
     public Player(MyScreen screen) {
+        lives = 5;
         created = TimeUtils.millis();
 
         this.screen = screen;
@@ -55,6 +60,8 @@ public class Player extends Sprite {
 
         this.width = 4;
         this.height = 10;
+        stateTimer = 0;
+
 
         defineBody();
 
@@ -67,6 +74,34 @@ public class Player extends Sprite {
 
         bulletDelay = 1290; //millisoconds
         isFiring = true;
+
+
+
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+
+        //get run animation frames and add them to spaceship Animations
+        for(int i = 0; i < 5; i++)
+            frames.add(new TextureRegion(spriteSheet, 500, i*50, 45, 50));
+        stationary = new Animation<TextureRegion>(0.2f, frames);
+        frames.clear();
+
+        for(int i = 0; i < 5; i++)
+            frames.add(new TextureRegion(spriteSheet, 450, i*50, 45, 50));
+        moving_left = new Animation<TextureRegion>(0.2f, frames);
+        frames.clear();
+
+        for(int i = 0; i < 5; i++)
+            frames.add(new TextureRegion(spriteSheet, 550, i*50, 45, 50));
+        moving_right = new Animation<TextureRegion>(0.2f, frames);
+        frames.clear();
+
+        for(int i = 0; i < 9; i++)
+            frames.add(new TextureRegion(spriteSheet, 400, i*50, 45, 50));
+        dead = new Animation<TextureRegion>(0.1f, frames);
+        frames.clear();
+
+
+
 
 
     }
@@ -123,15 +158,14 @@ public class Player extends Sprite {
     public void update(float delta){
 
 
-        //set state//
-        if(body.getLinearVelocity().x > 10)
-            current = State.MOVING_RIGHT;
+        current = getState();
 
-        if(body.getLinearVelocity().x < -10)
-            current = State.MOVING_LEFT;
+        stateTimer = current == previous ? stateTimer + delta : 0;
+        previous = current;
 
-        if(body.getLinearVelocity().x < 10 && body.getLinearVelocity().x > -10)
-            current = State.STATIONARY;
+
+        region2 = getFrame(delta);
+
 
 //        MyLib.llog(1f, "current state: " + current);
 //        MyLib.llog(1f, "X Velocity: " + body.getLinearVelocity().x);
@@ -185,7 +219,11 @@ public class Player extends Sprite {
         update(Gdx.graphics.getDeltaTime());
         batch.begin();
             //batch.draw(texture,body.getPosition().x - width, body.getPosition().y -height, width * 2, height);
-            batch.draw(textureRegion,body.getPosition().x - width, body.getPosition().y -height, width * 2, height);
+
+        //batch.draw(textureRegion,body.getPosition().x - width, body.getPosition().y -height, width * 2, height);
+
+        batch.draw(region2,body.getPosition().x - width, body.getPosition().y - height, width * 2, height);
+
         batch.end();
     }
 
@@ -198,9 +236,9 @@ public class Player extends Sprite {
 
         if (TimeUtils.millis() - lastBulletTime > bulletDelay && isFiring) {
 
-//            bullets.add( new Bullet( 1, 90, .01f,0));
-            bullets.add( new Bullet( 1, 70, .01f,-0.001f));
-//            bullets.add( new Bullet( 1, 110,.01f,0.01f));
+            bullets.add( new Bullet( 1, 90, .1f,0));
+            bullets.add( new Bullet( 1, 70, .1f,-0.01f));
+            bullets.add( new Bullet( 1, 110,.1f,0.01f));
 
 //            bullets.add( new Bullet( 10, 150, 1.0f,1));
 //            bullets.add( new Bullet( 10, 140, 1.0f,1));
@@ -218,7 +256,67 @@ public class Player extends Sprite {
 
     public void hit(){
         Gdx.app.log("player", " is hit");
+
+        current = State.DEAD;
     }
+
+
+    private State getState(){
+
+        //set state//
+        if(body.getLinearVelocity().x > 10 && current != State.DEAD)
+            current = State.MOVING_RIGHT;
+
+        if(body.getLinearVelocity().x < -10 && current != State.DEAD)
+            current = State.MOVING_LEFT;
+
+        if(body.getLinearVelocity().x < 10 && body.getLinearVelocity().x > -10  && current != State.DEAD)
+            current = State.STATIONARY;
+
+        return current;
+    }
+
+    public TextureRegion getFrame(float dt) {
+
+        current = getState();
+
+        TextureRegion region;
+
+        //depending on the state, get corresponding animation keyFrame.
+        switch (current) {
+            case DEAD:
+                region = dead.getKeyFrame(stateTimer, false);
+                break;
+
+            case STATIONARY:
+                region = stationary.getKeyFrame(stateTimer,true);
+                break;
+
+            case MOVING_LEFT:
+                region = moving_left.getKeyFrame(stateTimer,true);
+                break;
+
+            case MOVING_RIGHT:
+                region = moving_right.getKeyFrame(stateTimer,true);
+                break;
+
+            default:
+                region = stationary.getKeyFrame(stateTimer, true);
+                break;
+        }
+
+
+
+        return region;
+
+
+    }
+
+
+    public float getStateTimer(){
+        return stateTimer;
+    }
+
 
 
 

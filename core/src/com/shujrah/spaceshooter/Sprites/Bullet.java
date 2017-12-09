@@ -33,6 +33,7 @@ public class Bullet extends gameObject {
     Long created;
     public Boolean destroyFlag = false;
 
+
     TextureRegion textureRegion;
 
 
@@ -58,11 +59,12 @@ public class Bullet extends gameObject {
         angle += angleDelta;
         body.setTransform(body.getPosition().x, body.getPosition().y, angle);
         body.setBullet(true);
-        speed += acceleration/1;
+        speed += acceleration;
+
+        //rotate(angle);
+        setRotation(angle);
 
         body.setLinearVelocity(speed * MathUtils.cosDeg(angle), speed * MathUtils.sinDeg(angle));
-
-        //textureRegion.getTexture().
 
 
         if( (TimeUtils.millis() - created) > 9000)
@@ -81,17 +83,13 @@ public class Bullet extends gameObject {
         batch.begin();
 
 
-            //batch.draw(textureRegion, x - width/2, y - height/2, width, height );
-            batch.draw(textureRegion, x - width/2, y - height/2,
-                    x - width/2, y - height/2, width, height, 1, 1, angle);
+            batch.draw(textureRegion, x - width/2, y - height/2, width, height );
+//            batch.draw(textureRegion, x - width/2, y - height/2,
+//                    x, y, width, height, 1, 1, 3, false);
 
 //SpriteBatch.draw(textureRegion, x, y, originX, originY, width, height, scaleX, scaleY, rotation);
 
-//        batch.draw(textureRegion,
-//                x, y, x, y,
-//                width, height,
-//                2f,2f, angle
-//        );
+
 
 
         batch.end();
@@ -133,16 +131,13 @@ public class Bullet extends gameObject {
 
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.DynamicBody;
-        //bdef.position.set(MyGame.W/2, MyGame.H/2);
 
         bdef.position.set(player.body.getPosition().x, player.body.getPosition().y  + 0 + 0*height/2);
         body = world.createBody(bdef);
         bdef = null;
 
-
-
-        width = 1;
-        height = 2;
+        width = 2;
+        height = 4;
 
         FixtureDef fdef = new FixtureDef();
 
@@ -152,13 +147,8 @@ public class Bullet extends gameObject {
         vertices[2] = new Vector2(width/2,  height/2);
         vertices[3] = new Vector2(width/2,  -height/2);
 
-
         PolygonShape polygonShape = new PolygonShape();
         polygonShape.set(vertices);
-
-        CircleShape shape = new CircleShape();
-        shape.setRadius(width/2);
-//        fdef.shape = shape;
 
 
         fdef.shape = polygonShape;
@@ -166,11 +156,8 @@ public class Bullet extends gameObject {
         body.createFixture(fdef).setUserData("playerBullet");
         body.setUserData(this);
         body.setAwake(true);
-        shape.dispose();
         polygonShape.dispose();
         fdef = null;
-
-
 
     }
 
