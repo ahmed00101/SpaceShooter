@@ -2,6 +2,7 @@ package com.shujrah.spaceshooter.Sprites;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.shujrah.spaceshooter.MyGame;
 import com.shujrah.spaceshooter.Screens.MyScreen;
 
+import static com.shujrah.spaceshooter.MyGame.PPM;
 import static com.shujrah.spaceshooter.MyGame.spriteSheet;
 import static com.shujrah.spaceshooter.MyGame.sr;
 
@@ -32,7 +34,7 @@ public class Enemy extends gameObject {
     public MyScreen screen;
     public Body body;
     World world;
-    Texture texture;
+    //Texture texture;
     public Boolean destroyFlag = false;
     Long created;
     public final String typeStr = "Enemy";
@@ -40,6 +42,11 @@ public class Enemy extends gameObject {
     public static final long spawnDelay = 500;
     TextureRegion textureRegion;
 
+    enum State { MOVING, DEAD };
+    private State current, previous;
+    private float stateTimer;
+
+    Animation<TextureRegion> moving, dead;
 
     public static long lastEnemyTime;
     public float x, y, width, height, vy, angle;
@@ -52,9 +59,12 @@ public class Enemy extends gameObject {
         this.world = screen.getWorld();
         angle = 0;
         defineBody();
-        width=5; height=5;
-        textureRegion = new TextureRegion(spriteSheet, 3,347, 55,  55);
+        //textureRegion = new TextureRegion(spriteSheet, 3,244, 55,  60);
 
+        stateTimer = 0;
+        current = State.MOVING;
+
+        updateFrames();
 
     }
 
@@ -62,6 +72,12 @@ public class Enemy extends gameObject {
     public void update(float delta){
         vy -= delta * 10;
         //this.y -= vy;
+
+        stateTimer = current == previous ? stateTimer + delta : 0;
+        previous = current;
+
+
+        textureRegion = getFrame(delta);
 
         this.body.setLinearVelocity(0, vy);
 
@@ -76,6 +92,17 @@ public class Enemy extends gameObject {
     public void draw(Batch batch){
 
 
+
+
+//        sr.begin(ShapeRenderer.ShapeType.Filled);
+//        sr.rect(body.getPosition().x - width/2,
+//               body.getPosition().y - height/2,
+//               width,height, //width, height,
+//               Color.RED,Color.PINK, Color.RED, Color.MAROON);
+//
+//        sr.end();
+
+
         batch.begin();
 //            batch.draw(textureRegion,
 //                    body.getPosition().x, body.getPosition().y, //x, y,
@@ -84,20 +111,14 @@ public class Enemy extends gameObject {
 //                    1,1, //scaleX, scaleY,
 //                    angle);
 
-            batch.draw(textureRegion,
-                body.getPosition().x, body.getPosition().y, //x, y,
+
+
+        batch.draw(textureRegion,
+                body.getPosition().x - width/2, body.getPosition().y - height/2, //x, y,
                 width, height
-                );
+        );
 
         batch.end();
-
-        sr.begin(ShapeRenderer.ShapeType.Filled);
-        sr.rect(body.getPosition().x - width/2,
-               body.getPosition().y - height/2,
-               width,height, //width, height,
-               Color.RED,Color.PINK, Color.RED, Color.MAROON);
-
-        sr.end();
 
 
 
@@ -118,8 +139,8 @@ public class Enemy extends gameObject {
         body = world.createBody(bdef);
 
 
-        width = 3;
-        height = 4;
+        width = 50/PPM;
+        height = 50/PPM;
 
         fdef = new FixtureDef();
 
@@ -170,6 +191,64 @@ public class Enemy extends gameObject {
         world = null;
 
     }
+
+public void updateFrames(){
+
+    Array<TextureRegion> frames = new Array<TextureRegion>();
+
+    //get run animation frames and add them to spaceship Animations
+    for(int i = 0; i < 5; i++)
+        frames.add(new TextureRegion(spriteSheet, 300, i*50, 45, 50));
+    moving = new Animation<TextureRegion>(0.2f, frames);
+    frames.clear();
+
+    for(int i = 0; i < 7; i++)
+        frames.add(new TextureRegion(spriteSheet, 350, i*50, 45, 50));
+    for(int i = 7; i > 0; i--)
+        frames.add(new TextureRegion(spriteSheet, 350, i*50, 45, 50));
+
+
+    dead = new Animation<TextureRegion>(0.1f, frames);
+    frames.clear();
+
+    frames = null;
+
+
+}
+
+
+
+    public void updateTextureRegion(){
+
+
+
+    }
+
+
+
+
+
+    public TextureRegion getFrame(float dt) {
+
+        TextureRegion region;
+
+        //depending on the state, get corresponding animation keyFrame.
+        switch (current) {
+            case DEAD:
+                region = dead.getKeyFrame(stateTimer, false);
+                break;
+
+            case MOVING:
+                region = moving.getKeyFrame(stateTimer, true);
+                break;
+
+            default:
+                region = moving.getKeyFrame(stateTimer, true);
+                break;
+        }
+        return region;
+    }
+
 
 
 

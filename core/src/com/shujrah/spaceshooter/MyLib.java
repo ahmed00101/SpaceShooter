@@ -7,10 +7,20 @@ import com.badlogic.gdx.Gdx;
  */
 
 public class MyLib {
+    public static boolean logging;
 
     public static float timeState=0f;
 
+
+    public MyLib(){
+
+    }
+
     public static void llog(float time, String str) {
+
+        if (!logging) {
+            return;
+        }
 
         timeState += Gdx.graphics.getDeltaTime();
 

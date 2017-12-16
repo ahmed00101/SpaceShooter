@@ -1,5 +1,6 @@
 package com.shujrah.spaceshooter.Sprites;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -16,6 +17,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.shujrah.spaceshooter.MyGame;
+import com.shujrah.spaceshooter.MyLib;
+
+import static com.shujrah.spaceshooter.MyGame.PPM;
 import static com.shujrah.spaceshooter.MyGame.player;
 import static com.shujrah.spaceshooter.MyGame.spriteSheet;
 import static com.shujrah.spaceshooter.MyGame.sr;
@@ -27,7 +31,7 @@ import static com.shujrah.spaceshooter.MyGame.world;
 
 public class Bullet extends gameObject {
 
-    float x, y, width, height, vy, speed, angle, acceleration, angleDelta;
+    float x, y, width, height, speed, angle, acceleration, angleDelta;
     public Body body;
     public final String typeStr = "Bullet";
     Long created;
@@ -39,13 +43,14 @@ public class Bullet extends gameObject {
 
     public Bullet( float speed, float angle, float acceleration, float angleDelta) {
         created = TimeUtils.millis();
-        this.speed = speed/10;
+        this.speed = speed;
         this.angle = angle;
         this.acceleration = acceleration;
         this.angleDelta = angleDelta;
         defineBody();
-        vy = speed;
+        updateFrames();
         textureRegion = new TextureRegion(spriteSheet, 25,134, 8,  12);
+        //Gdx.app.log("Bullet", "" + speed);
 
     }
 
@@ -57,13 +62,15 @@ public class Bullet extends gameObject {
         y = body.getPosition().y;
 
         angle += angleDelta;
-        body.setTransform(body.getPosition().x, body.getPosition().y, angle);
-        body.setBullet(true);
+        //body.setTransform(body.getPosition().x, body.getPosition().y, angle);
+        //body.setBullet(true);
         speed += acceleration;
 
         //rotate(angle);
-        setRotation(angle);
+        //setRotation(angle);
 
+
+        //body.setLinearVelocity(speed * MathUtils.cosDeg(angle), speed * MathUtils.sinDeg(angle));
         body.setLinearVelocity(speed * MathUtils.cosDeg(angle), speed * MathUtils.sinDeg(angle));
 
 
@@ -78,20 +85,18 @@ public class Bullet extends gameObject {
 
     }
 
+
+
+
+
     public void draw(Batch batch){
 
         batch.begin();
-
-
             batch.draw(textureRegion, x - width/2, y - height/2, width, height );
 //            batch.draw(textureRegion, x - width/2, y - height/2,
 //                    x, y, width, height, 1, 1, 3, false);
 
 //SpriteBatch.draw(textureRegion, x, y, originX, originY, width, height, scaleX, scaleY, rotation);
-
-
-
-
         batch.end();
 
 
@@ -136,8 +141,8 @@ public class Bullet extends gameObject {
         body = world.createBody(bdef);
         bdef = null;
 
-        width = 2;
-        height = 4;
+        width = 10/PPM;
+        height = 20/PPM;
 
         FixtureDef fdef = new FixtureDef();
 
@@ -168,6 +173,11 @@ public class Bullet extends gameObject {
 
 
 
+    public void updateFrames(){
+
+
+
+    }
 
 
 

@@ -18,7 +18,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.shujrah.spaceshooter.MyGame;
-import com.shujrah.spaceshooter.MyLib;
 import com.shujrah.spaceshooter.Sprites.Bullet;
 import com.shujrah.spaceshooter.Sprites.Enemy;
 import com.shujrah.spaceshooter.Sprites.Player;
@@ -49,15 +48,19 @@ public class MyScreen implements Screen {
     Box2DDebugRenderer debugRenderer;
     Texture texture;
 
+    HUD mStage;
 
 
     public MyScreen(MyGame game) {
 
 
 
+
+
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        cam = new OrthographicCamera(game.H/MyGame.PPM, game.H / MyGame.PPM * (h / w));
+        //cam = new OrthographicCamera(game.H/MyGame.PPM, game.H / MyGame.PPM * (h / w));
+        cam = new OrthographicCamera(1f, 2f);
 
         cam.translate(game.W/2, game.H/2);
 
@@ -74,13 +77,17 @@ public class MyScreen implements Screen {
         player = new Player(this);
         player.setPosition(game.W/2, game.H/2);
 
-        texture = new Texture( Gdx.files.internal("spaceship.png"));
+//        texture = new Texture( Gdx.files.internal("spaceship.png"));
 
         //Initialize arrays
         bullets = new Array<Bullet>();
         enemies = new Array<Enemy>();
 
         //setGround();
+
+
+        mStage  = new HUD(gamePort, game.batch);
+
 
 
     }
@@ -102,25 +109,7 @@ public class MyScreen implements Screen {
 
 
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            player.body.applyLinearImpulse( new Vector2(-1f,0),player.body.getWorldCenter(), true);
-        }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            player.body.applyLinearImpulse( new Vector2(1f,0),player.body.getWorldCenter(), true);
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-            player.body.applyLinearImpulse( new Vector2(0,1f),player.body.getWorldCenter(), true);
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            player.body.applyLinearImpulse( new Vector2(0,-1f),player.body.getWorldCenter(), true);
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            player.setPosition(MyGame.W/2, MyGame.H/2);
-        }
 
 
 
@@ -206,6 +195,7 @@ public class MyScreen implements Screen {
         //MyLib.llog(5f, "Bullets: " + bullets.size + ", Enemies: "+ enemies.size);
 
         //MyLib.llog(2f,"World Bodies: " + world.getBodyCount());
+        mStage.act(delta);
 
     }
 
@@ -246,6 +236,8 @@ public class MyScreen implements Screen {
 
         if(debugRendererOn)
         debugRenderer.render(world, cam.combined);
+
+        mStage.draw();
 
 
     }

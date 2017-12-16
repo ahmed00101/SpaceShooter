@@ -25,7 +25,7 @@ public class MyGame extends Game {
 
 	public static final float H = 100;
 	public static final float W = 50;
-	public static final int PPM = 100;
+	public static final int PPM = 5;
 	public static World world;
 	public static Player player;
 	public static ShapeRenderer sr;
@@ -40,9 +40,15 @@ public class MyGame extends Game {
 
 	@Override
 	public void create () {
+	    MyLib.logging = false;
+
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-		debugRendererOn = true ;//true;
+        Gdx.app.log("MyGame", "World Area (meters): " + W + " x " + H);
+		Gdx.app.log("MyGame", "World Area (px): " + W*PPM + " x " + H*PPM
+        + " || PPM:" + PPM);
+
+		debugRendererOn = false; //true;
 
 		batch = new SpriteBatch();
         spriteSheet = new Texture( Gdx.files.internal("shooterSprites.png") );
